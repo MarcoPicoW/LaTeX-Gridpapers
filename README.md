@@ -93,8 +93,12 @@ when mixing regular text pages with blank note pages in a larger document.
 
 Example:
 ```latex
+\gridpaperon
+This entire page will have the grid below the text 
+\gridpaperoff
+
 Some regular text on a plain page.
-\gridpages{3}
+\gridpages{3} % Three pages will be added without text but with the grid
 More regular text, back to plain pages.
 ```
 

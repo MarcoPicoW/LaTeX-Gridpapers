@@ -94,7 +94,7 @@ when mixing regular text pages with blank note pages in a larger document.
 Example:
 ```latex
 \gridpaperon
-This entire page will have the grid below the text 
+This entire page will have the grid under the text 
 \gridpaperoff
 
 Some regular text on a plain page.

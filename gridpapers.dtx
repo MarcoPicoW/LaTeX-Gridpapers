@@ -44,13 +44,14 @@
 \CodelineIndex
 \RecordChanges
 \begin{document}
+  \gridpaperon
   \DocInput{gridpapers.dtx}
   \PrintChanges
 \end{document}
 %</driver>
 % \fi
 %
-% \CheckSum{439}
+% \CheckSum{441}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -74,7 +75,7 @@
 % everypage-1x, use everypage}
 % \changes{v1.0.2}{2021/03/26}{Replace triangle and hexagon code
 % to allow rotated grids, add 'ghostly' colorset}
-% \changes{v1.1.0}{2026/03/20}{Add selective grid activation:
+% \changes{v1.0.5}{2026/03/20}{Add selective grid activation:
 %   \cs{gridpaperon}, \cs{gridpaperoff}, \cs{gridpages}}
 % \DoNotIndex{\newcommand,\newenvironment}
 %
@@ -779,10 +780,6 @@
 
 %% Set the background color.
 \AtBeginDocument{\pagecolor{bgcolor}}
-%% Actually hook it in!
-\AddEverypageHook{%
-\GP@patterncode%
-}
 %    \end{macrocode}
 %
 % \subsection{Selective grid activation}
@@ -792,14 +789,14 @@
 % which is useful when including blank note pages in a larger
 % document alongside regular text pages.
 %
-% \DescribeObject{\textbackslash gridpaperon}
+% \DescribeMacro{gridpaperon}
 % Activates the grid pattern from the current page onwards.
 %
-% \DescribeObject{\textbackslash gridpaperoff}
+% \DescribeMacro{gridpaperoff}
 % Deactivates the grid pattern from the current page onwards.
 % This is the default state.
 %
-% \DescribeObject{\textbackslash gridpages\marg{n}}
+% \DescribeMacro{gridpages}
 % Inserts \meta{n} blank pages with the grid pattern.
 % The grid is automatically activated before the first page
 % and deactivated after the last one, so surrounding pages
@@ -813,35 +810,38 @@
 % \end{sourceverb}
 %
 %    \begin{macrocode}
-% ---------------------------------------------------------------
-% Selective grid activation
-% \gridpaperon  -> activate grid from current page onwards
-% \gridpaperoff -> deactivate grid (this is the default)
-% \gridpages{N} -> insert N blank grid pages, then deactivate
-% ---------------------------------------------------------------
+%% ---------------------------------------------------------------
+%% Selective grid activation
+%% \gridpaperon  -> activate grid from current page onwards until deactivated or until the end of the document
+%% \gridpaperoff -> deactivate grid (this is the default)
+%% \gridpages{N} -> insert N blank grid pages, then deactivate
+%% ---------------------------------------------------------------
 \newif\ifGP@active
 \GP@activefalse
 
 \newcommand{\gridpaperon}{\GP@activetrue}
 \newcommand{\gridpaperoff}{\GP@activefalse}
-
-\newcommand{\gridpages}[1]{%
-  \clearpage%
-  \GP@activetrue%
-  \@tempcnta=0\relax%
+\newcount\GP@pagecnt
+\newcommand{\gridpages}[1]{
+  \clearpage
+  \GP@activetrue
+  \GP@pagecnt=0\relax
   \loop
-    \thispagestyle{empty}%
-    ~%
-    \advance\@tempcnta by 1\relax%
-    \ifnum\@tempcnta<#1\relax%
-      \clearpage%
-    \fi%
-  \ifnum\@tempcnta<#1\repeat%
-  \clearpage%
-  \GP@activefalse%
+    ~
+    \advance\GP@pagecnt by 1\relax
+    \ifnum\GP@pagecnt<#1\relax
+      \clearpage
+    \fi
+  \ifnum\GP@pagecnt<#1\repeat
+  \clearpage
+  \GP@activefalse
 }
-
-\endinput
+%% Hook the pattern code to every page, but only execute it if the grid is active
+\AddEverypageHook{
+  \ifGP@active
+    \GP@patterncode
+  \fi
+}
 
 \endinput
 %    \end{macrocode}

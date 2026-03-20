@@ -1,6 +1,6 @@
 ## The PDF we are generating:
 graph paper.pdf
-
+gridpapers.pdf
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
@@ -13,6 +13,7 @@ graph paper.pdf
 *.fot
 *.cb
 *.cb2
+*.hd
 
 ## Intermediate documents:
 *.dvi

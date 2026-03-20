@@ -50,7 +50,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{405}
+% \CheckSum{439}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -74,7 +74,8 @@
 % everypage-1x, use everypage}
 % \changes{v1.0.2}{2021/03/26}{Replace triangle and hexagon code
 % to allow rotated grids, add 'ghostly' colorset}
-%
+%% \changes{v1.1.0}{2026/03/20}{Add selective grid activation:
+%   \cs{gridpaperon}, \cs{gridpaperoff}, \cs{gridpages}}
 % \DoNotIndex{\newcommand,\newenvironment}
 %
 % \GetFileInfo{gridpapers.sty}
@@ -782,6 +783,65 @@
 \AddEverypageHook{%
 \GP@patterncode%
 }
+%    \end{macrocode}
+%
+% \subsection{Selective grid activation}
+%
+% By default, the grid pattern is applied to every page of the
+% document. The following commands allow selective activation,
+% which is useful when including blank note pages in a larger
+% document alongside regular text pages.
+%
+% \DescribeObject{\textbackslash gridpaperon}
+% Activates the grid pattern from the current page onwards.
+%
+% \DescribeObject{\textbackslash gridpaperoff}
+% Deactivates the grid pattern from the current page onwards.
+% This is the default state.
+%
+% \DescribeObject{\textbackslash gridpages\marg{n}}
+% Inserts \meta{n} blank pages with the grid pattern.
+% The grid is automatically activated before the first page
+% and deactivated after the last one, so surrounding pages
+% are not affected.
+%
+% Example usage:
+% \begin{sourceverb}[frame=single]
+% Some regular text on a plain page.
+% \gridpages{3}
+% More regular text, back to plain pages.
+% \end{sourceverb}
+%
+%    \begin{macrocode}
+% ---------------------------------------------------------------
+% Selective grid activation
+% \gridpaperon  -> activate grid from current page onwards
+% \gridpaperoff -> deactivate grid (this is the default)
+% \gridpages{N} -> insert N blank grid pages, then deactivate
+% ---------------------------------------------------------------
+\newif\ifGP@active
+\GP@activefalse
+
+\newcommand{\gridpaperon}{\GP@activetrue}
+\newcommand{\gridpaperoff}{\GP@activefalse}
+
+\newcommand{\gridpages}[1]{%
+  \clearpage%
+  \GP@activetrue%
+  \@tempcnta=0\relax%
+  \loop
+    \thispagestyle{empty}%
+    ~%
+    \advance\@tempcnta by 1\relax%
+    \ifnum\@tempcnta<#1\relax%
+      \clearpage%
+    \fi%
+  \ifnum\@tempcnta<#1\repeat%
+  \clearpage%
+  \GP@activefalse%
+}
+
+\endinput
 
 \endinput
 %    \end{macrocode}

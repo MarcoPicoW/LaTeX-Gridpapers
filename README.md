@@ -78,6 +78,25 @@ background.  Then you would write:
   bgcolor=white,
   geometry={a4paper, margin=2cm}]{gridpapers}
 ```
+### Selective grid activation
+
+By default, the grid is applied to every page. The following commands
+allow you to activate the grid only on specific pages, which is useful
+when mixing regular text pages with blank note pages in a larger document.
+
+- `\gridpaperon`: activates the grid from the current page onwards.
+- `\gridpaperoff`: deactivates the grid from the current page onwards.
+  This is the default state when the package is loaded.
+- `\gridpages{n}`: inserts `n` blank pages with the grid pattern.
+  The grid is automatically activated before the first page and
+  deactivated after the last, so surrounding pages are unaffected.
+
+Example:
+```latex
+Some regular text on a plain page.
+\gridpages{3}
+More regular text, back to plain pages.
+```
 
 Gallery
 -------

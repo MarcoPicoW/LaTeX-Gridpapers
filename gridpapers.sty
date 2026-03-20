@@ -18,6 +18,7 @@
 %% and version 1.3 or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
 %% 
+%% \changes{v1.1.0}{2026/03/20}{Add selective grid activation:
 
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
 \ProvidesPackage{gridpapers}
@@ -551,6 +552,27 @@
 %% Actually hook it in!
 \AddEverypageHook{%
 \GP@patterncode%
+}
+\newif\ifGP@active
+\GP@activefalse
+
+\newcommand{\gridpaperon}{\GP@activetrue}
+\newcommand{\gridpaperoff}{\GP@activefalse}
+
+\newcommand{\gridpages}[1]{%
+  \clearpage%
+  \GP@activetrue%
+  \@tempcnta=0\relax%
+  \loop
+    \thispagestyle{empty}%
+    ~%
+    \advance\@tempcnta by 1\relax%
+    \ifnum\@tempcnta<#1\relax%
+      \clearpage%
+    \fi%
+  \ifnum\@tempcnta<#1\repeat%
+  \clearpage%
+  \GP@activefalse%
 }
 
 \endinput

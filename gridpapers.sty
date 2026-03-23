@@ -18,10 +18,9 @@
 %% and version 1.3 or later is part of all distributions of LaTeX
 %% version 2005/12/01 or later.
 %% 
-
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
 \ProvidesPackage{gridpapers}
-    [2021/03/27 v1.0.2 Graph paper backgrounds]
+    [2021/03/27 v1.1.0 Graph paper backgrounds]
 
 \RequirePackage{xkeyval}
 \RequirePackage{kvoptions}
@@ -51,10 +50,14 @@
 \newif\ifGP@fullnessset
 \newif\ifGP@fullpage
 \newif\ifGP@textarea
+%% MODIFIED: new switch for manual activation mode
+\newif\ifGP@manualactivation
 \GP@geometrypreviouslyloadedfalse
 \GP@fullnesssetfalse
 \GP@fullpagefalse
 \GP@textareafalse
+%% MODIFIED: manual activation is off by default (grid is always on)
+\GP@manualactivationfalse
 
 \SetupKeyvalOptions{%
   family=GP,%
@@ -73,6 +76,10 @@
 
 \DeclareVoidOption{fullpage}{\GP@fullpagetrue}
 \DeclareVoidOption{textarea}{\GP@textareatrue}
+
+%% MODIFIED: new option -- when passed, grid starts OFF and must be
+%% enabled explicitly with \gridpaperon (restores old behaviour)
+\DeclareVoidOption{manualactivation}{\GP@manualactivationtrue}
 
 \DeclareStringOption{geometry}
 
@@ -291,22 +298,6 @@
   },
 }
 }
-%% \pgfdeclarepatternformonly
-%%   {lightcones}% name
-%%   {\pgfpointorigin}% lower left
-%%   {\pgfpoint{\GP@patternsize}{\GP@patternsize}}%  upper right
-%%   {\pgfpoint{\GP@patternsize}{\GP@patternsize}}%  tile size
-%%   {% shape description
-%%     \pgfsetlinewidth{0.4pt}
-%%     %% TODO Make an option
-%%     %Comment out this line for solid lines on light cones, instead of dashes.
-%%     \pgfsetdash{{0.05cm}{0.05cm}}{0.025cm}
-%%     \pgfpathmoveto{\pgfpoint{0in}{0in}}
-%%     \pgfpathlineto{\pgfpoint{\GP@patternsize}{\GP@patternsize}}
-%%     \pgfpathmoveto{\pgfpoint{0in}{\GP@patternsize}}
-%%     \pgfpathlineto{\pgfpoint{\GP@patternsize}{0in}}
-%%     \pgfusepath{stroke}
-%%   }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% This section sets up a routine for filling a region with dots
@@ -550,15 +541,27 @@
 \AtBeginDocument{\pagecolor{bgcolor}}
 %% ---------------------------------------------------------------
 %% Selective grid activation
-%% \gridpaperon  -> activate grid from current page onwards until deactivated or until the end of the document
-%% \gridpaperoff -> deactivate grid (this is the default)
+%% \gridpaperon  -> activate grid from current page onwards
+%% \gridpaperoff -> deactivate grid
 %% \gridpages{N} -> insert N blank grid pages, then deactivate
+%%
+%% MODIFIED: \ifGP@active now starts TRUE by default so the grid
+%% appears on every page without any extra command.  When the package
+%% option 'manualactivation' is passed, the flag starts FALSE and the
+%% old behaviour (grid off until \gridpaperon) is restored.
 %% ---------------------------------------------------------------
 \newif\ifGP@active
-\GP@activefalse
+\ifGP@manualactivation
+  \GP@activefalse   %% manualactivation: start with grid OFF
+\else
+  \GP@activetrue    %% default: start with grid ON
+\fi
 
 \newcommand{\gridpaperon}{\GP@activetrue}
-\newcommand{\gridpaperoff}{\GP@activefalse}
+\newcommand{\gridpaperoff}{%
+  \clearpage
+  \GP@activefalse
+}
 \newcount\GP@pagecnt
 \newcommand{\gridpages}[1]{
   \clearpage

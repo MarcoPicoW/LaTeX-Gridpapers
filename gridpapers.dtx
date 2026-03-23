@@ -51,7 +51,7 @@
 %</driver>
 % \fi
 %
-% \CheckSum{441}
+% \CheckSum{430}
 %
 % \CharacterTable
 %  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
@@ -77,6 +77,8 @@
 % to allow rotated grids, add 'ghostly' colorset}
 % \changes{v1.0.5}{2026/03/20}{Add selective grid activation:
 %   \cs{gridpaperon}, \cs{gridpaperoff}, \cs{gridpages}}
+% \changes{v1.1.0}{2026/03/23}{Grid always active by default;
+%   add \texttt{manualactivation} option to restore manual control}
 % \DoNotIndex{\newcommand,\newenvironment}
 %
 % \GetFileInfo{gridpapers.sty}
@@ -160,6 +162,13 @@
 % However, if the |geometry| package was loaded before |gridpapers|,
 % this option will be ignored.
 %
+% \DescribeObject{manualactivation} By default the grid pattern is
+% active on every page from the start of the document. Passing this
+% option disables that behaviour: the grid starts \emph{off} and must
+% be turned on explicitly with |\gridpaperon|. This is useful when the
+% package is used inside a larger document and the grid should appear
+% only on selected pages.
+%
 % \subsection{Patterns}
 % \label{sec:patterns}
 %
@@ -239,7 +248,19 @@
 %   xleftmargin=2em,
 %   label=custom-colors.tex]{examples/custom-colors.tex}
 %
-
+% \subsection{Grid pages inside a larger document}
+%
+% When including grid pages inside a document with regular text, use
+% the |manualactivation| option so the grid does not appear on every
+% page, then use |\gridpages{n}| to insert the desired number of grid
+% pages:
+% \begin{sourceverb}[frame=single]
+% \usepackage[pattern=std, textarea, manualactivation]{gridpapers}
+% ...
+% Regular text on a plain page.
+% \gridpages{3}
+% More regular text, back to plain pages.
+% \end{sourceverb}
 %
 % \StopEventually{}
 %
@@ -252,7 +273,7 @@
 %    \begin{macrocode}
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
 \ProvidesPackage{gridpapers}
-    [2021/03/27 v1.0.2 Graph paper backgrounds]
+    [2021/03/27 v1.1.0 Graph paper backgrounds]
 
 \RequirePackage{xkeyval}
 \RequirePackage{kvoptions}
@@ -282,10 +303,14 @@
 \newif\ifGP@fullnessset
 \newif\ifGP@fullpage
 \newif\ifGP@textarea
+%% MODIFIED: new switch for manual activation mode
+\newif\ifGP@manualactivation
 \GP@geometrypreviouslyloadedfalse
 \GP@fullnesssetfalse
 \GP@fullpagefalse
 \GP@textareafalse
+%% MODIFIED: manual activation is off by default (grid is always on)
+\GP@manualactivationfalse
 
 \SetupKeyvalOptions{%
   family=GP,%
@@ -304,6 +329,10 @@
 
 \DeclareVoidOption{fullpage}{\GP@fullpagetrue}
 \DeclareVoidOption{textarea}{\GP@textareatrue}
+
+%% MODIFIED: new option -- when passed, grid starts OFF and must be
+%% enabled explicitly with \gridpaperon (restores old behaviour)
+\DeclareVoidOption{manualactivation}{\GP@manualactivationtrue}
 
 \DeclareStringOption{geometry}
 
@@ -523,22 +552,6 @@
   },
 }
 }
-%% \pgfdeclarepatternformonly
-%%   {lightcones}% name
-%%   {\pgfpointorigin}% lower left
-%%   {\pgfpoint{\GP@patternsize}{\GP@patternsize}}%  upper right
-%%   {\pgfpoint{\GP@patternsize}{\GP@patternsize}}%  tile size
-%%   {% shape description
-%%     \pgfsetlinewidth{0.4pt}
-%%     %% TODO Make an option
-%%     %Comment out this line for solid lines on light cones, instead of dashes.
-%%     \pgfsetdash{{0.05cm}{0.05cm}}{0.025cm}
-%%     \pgfpathmoveto{\pgfpoint{0in}{0in}}
-%%     \pgfpathlineto{\pgfpoint{\GP@patternsize}{\GP@patternsize}}
-%%     \pgfpathmoveto{\pgfpoint{0in}{\GP@patternsize}}
-%%     \pgfpathlineto{\pgfpoint{\GP@patternsize}{0in}}
-%%     \pgfusepath{stroke}
-%%   }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% This section sets up a routine for filling a region with dots
@@ -784,40 +797,42 @@
 %
 % \subsection{Selective grid activation}
 %
-% By default, the grid pattern is applied to every page of the
-% document. The following commands allow selective activation,
-% which is useful when including blank note pages in a larger
-% document alongside regular text pages.
+% By default the grid is active on every page of the document.
+% If the |manualactivation| package option is given, the grid starts
+% \emph{off} and the following commands control it explicitly.
 %
-% \DescribeMacro{gridpaperon}
-% Activates the grid pattern from the current page onwards.
+% \DescribeMacro{\gridpaperon}
+% Activates the grid pattern from the current page onwards, until
+% |\gridpaperoff| is called or the document ends.
 %
-% \DescribeMacro{gridpaperoff}
+% \DescribeMacro{\gridpaperoff}
 % Deactivates the grid pattern from the current page onwards.
-% This is the default state.
+% When |manualactivation| is used this is also the \emph{initial} state.
 %
-% \DescribeMacro{gridpages}
+% \DescribeMacro{\gridpages}
 % Inserts \meta{n} blank pages with the grid pattern.
 % The grid is automatically activated before the first page
 % and deactivated after the last one, so surrounding pages
 % are not affected.
 %
-% Example usage:
-% \begin{sourceverb}[frame=single]
-% Some regular text on a plain page.
-% \gridpages{3}
-% More regular text, back to plain pages.
-% \end{sourceverb}
-%
 %    \begin{macrocode}
 %% ---------------------------------------------------------------
 %% Selective grid activation
-%% \gridpaperon  -> activate grid from current page onwards until deactivated or until the end of the document
-%% \gridpaperoff -> deactivate grid (this is the default)
+%% \gridpaperon  -> activate grid from current page onwards
+%% \gridpaperoff -> deactivate grid
 %% \gridpages{N} -> insert N blank grid pages, then deactivate
+%%
+%% MODIFIED: \ifGP@active now starts TRUE by default so the grid
+%% appears on every page without any extra command.  When the package
+%% option 'manualactivation' is passed, the flag starts FALSE and the
+%% old behaviour (grid off until \gridpaperon) is restored.
 %% ---------------------------------------------------------------
 \newif\ifGP@active
-\GP@activefalse
+\ifGP@manualactivation
+  \GP@activefalse   %% manualactivation: start with grid OFF
+\else
+  \GP@activetrue    %% default: start with grid ON
+\fi
 
 \newcommand{\gridpaperon}{\GP@activetrue}
 \newcommand{\gridpaperoff}{\GP@activefalse}

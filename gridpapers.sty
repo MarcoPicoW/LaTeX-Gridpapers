@@ -575,17 +575,26 @@
     \fi
   \ifnum\GP@pagecnt<#1\repeat
   \clearpage
-  % Aggiungi pagina di padding con griglia solo se la classe
-  % usa openright/openleft (book, scrbook...) e la pagina
-  % corrente è pari, cioè il prossimo \chapter inserirebbe una bianca
-  \if@openright
-    \ifodd\value{page}%
-    \else
-      \hbox{}%
-      \thispagestyle{empty}%
-      \newpage
+  % Padding solo se la classe supporta openright E l'opzione è attiva
+  \@ifclassloaded{book}{%
+    \if@openright
+      \ifodd\c@page\else
+        \hbox{}%
+        \thispagestyle{empty}%
+        \newpage
+      \fi
     \fi
-  \fi
+  }{%
+    \@ifclassloaded{scrbook}{%
+      \if@openright
+        \ifodd\c@page\else
+          \hbox{}%
+          \thispagestyle{empty}%
+          \newpage
+        \fi
+      \fi
+    }{}% article e altre classi: non fare nulla
+  }%
   \GP@activefalse
 }
 %% Hook the pattern code to every page, but only execute it if the grid is active

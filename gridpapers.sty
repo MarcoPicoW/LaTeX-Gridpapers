@@ -20,20 +20,15 @@
 %% 
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
 \ProvidesPackage{gridpapers}
-    [2021/03/27 v1.1.0 Graph paper backgrounds]
-
+    [2026/03/26 v1.1.0 Graph paper backgrounds]
 \RequirePackage{xkeyval}
 \RequirePackage{kvoptions}
 \RequirePackage{xcolor}
 \RequirePackage{tikz}
 \usetikzlibrary{patterns.meta,calc}
 \RequirePackage{tikzpagenodes}
-%% everypage has been superseded -- try to use the new builtin
-%% approach, but fall back to everypage-1x if needed
-%% This code is roughly taken from the new everypage code
 \@ifundefined{AddToHook}{%
   \IfFileExists{everypage-1x.sty}{%
-    %% If everypage is new enough to complain, avoid the complaints
     \RequirePackage{everypage-1x}
   }{\RequirePackage{everypage}}
 }{%
@@ -41,79 +36,48 @@
   \AddToHook{shipout/background}{\put(1in,-1in){#1}}}
 }
 \RequirePackage{pagecolor}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Option parsing
-%% Declare switches for processing the options.
-
 \newif\ifGP@geometrypreviouslyloaded
 \newif\ifGP@fullnessset
 \newif\ifGP@fullpage
 \newif\ifGP@textarea
-%% MODIFIED: new switch for manual activation mode
 \newif\ifGP@manualactivation
 \GP@geometrypreviouslyloadedfalse
 \GP@fullnesssetfalse
 \GP@fullpagefalse
 \GP@textareafalse
-%% MODIFIED: manual activation is off by default (grid is always on)
 \GP@manualactivationfalse
-
 \SetupKeyvalOptions{%
   family=GP,%
   prefix=GPOpt@%
 }
-
 \DeclareStringOption[std]{pattern}
 \DeclareStringOption[std]{colorset}
-
 \DeclareStringOption{majorcolor}
 \DeclareStringOption{minorcolor}
 \DeclareStringOption{bgcolor}
-
 \DeclareStringOption{patternsize}
 \DeclareStringOption[.7pt]{dotsize}
-
 \DeclareVoidOption{fullpage}{\GP@fullpagetrue}
 \DeclareVoidOption{textarea}{\GP@textareatrue}
-
-%% MODIFIED: new option -- when passed, grid starts OFF and must be
-%% enabled explicitly with \gridpaperon (restores old behaviour)
 \DeclareVoidOption{manualactivation}{\GP@manualactivationtrue}
-
 \DeclareStringOption{geometry}
-
 \ProcessKeyvalOptions*
-
-%% Can only have one of fullpage or textarea
 \ifGP@fullpage
   \ifGP@textarea
     \PackageError{gridpapers}{%
       Can not specify both fullpage and textarea, please remove one option}{}
-    \fi
+  \fi
   \GP@fullnesssettrue
 \fi
-
 \ifGP@textarea
   \GP@fullnesssettrue
 \fi
-
-%% We keep track of this to know whether or not we would be overriding
-%% a previously-set page geometry
 \@ifpackageloaded{geometry}
   {\GP@geometrypreviouslyloadedtrue}
   {\GP@geometrypreviouslyloadedfalse%
     \PassOptionsToPackage{\GPOpt@geometry}{geometry}%
     \RequirePackage{geometry}%
   }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Actual package code
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Some nice colors.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \definecolor{plum}{rgb}{0.36078, 0.20784, 0.4}
 \definecolor{chameleon}{rgb}{0.30588, 0.60392, 0.023529}
 \definecolor{cornflower}{rgb}{0.12549, 0.29020, 0.52941}
@@ -122,21 +86,8 @@
 \definecolor{sunrise}{rgb}{0.80784, 0.36078, 0}
 \definecolor{rosiebg}{RGB}{250,247,232}
 \definecolor{rosiegrid}{RGB}{186,137,113}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% The color to use for the null directions when drawing lightcones.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \colorlet{lightlines}{scarlet!30}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Pre-defined Color schemes
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Here are some pre-defined color schemes for the paper background
-%% and the major and minor grid lines.  These are switched by using
-%% the option colorset=<name>.  The allowed values for colorset are in
-%% the list below.
 \define@choicekey*{GP}{colorset}[\val\nr]%
-  %% Allowed values for colorset:
   {std,precocious,ghostly,brickred,engineer,plumpad}[std]{%
   \ifcase\nr\relax
     %% std
@@ -170,42 +121,18 @@
     \colorlet{bgcolor}{plum!10}
   \fi
 }
-
-%% Get the specified color set from the options
-\def\@setkeyhelper#1#2{%
-  \setkeys{GP}{#2=#1}
-}
+\def\@setkeyhelper#1#2{\setkeys{GP}{#2=#1}}
 \expandafter\@setkeyhelper\expandafter{\GPOpt@colorset}{colorset}
-
-%% If the user further specified majorcolor, minorcolor, and/or
-%% bgcolor, we now override the selected colorset
-\ifx\GPOpt@majorcolor\@empty
-\else
+\ifx\GPOpt@majorcolor\@empty\else
   \colorlet{majorcolor}{\GPOpt@majorcolor}
 \fi
-\ifx\GPOpt@minorcolor\@empty
-\else
+\ifx\GPOpt@minorcolor\@empty\else
   \colorlet{minorcolor}{\GPOpt@minorcolor}
 \fi
-\ifx\GPOpt@bgcolor\@empty
-\else
+\ifx\GPOpt@bgcolor\@empty\else
   \colorlet{bgcolor}{\GPOpt@bgcolor}
 \fi
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% The size parameter -- different meanings for different patterns
-%% Will be reset by pattern code
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\GP@patternsize}{0.1in}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% This section sets up a routine for filling a shape with
-%% hexagons. Uses code from:
-%% http://tex.stackexchange.com/questions/6019/drawing-hexagons/6128#6128
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% We have to delay this definition until after \GP@patternsize is
-%% redefined (by the pattern selection and/or user override)
 \newcommand{\GP@declarehexpat}{
 \tikzdeclarepattern{
   name=hexagons,
@@ -214,9 +141,7 @@
   tile size={(3*\GP@patternsize,0.866025*2*\GP@patternsize)},
   parameters={\tikzhexrotate},
   tile transformation={rotate=\tikzhexrotate},
-  defaults={
-    rotate/.store in=\tikzhexrotate,rotate=0,
-  },
+  defaults={rotate/.store in=\tikzhexrotate,rotate=0},
   code={
       \pgfsetlinewidth{0.6pt}
       \pgftransformshift{\pgfpoint{0mm}{0.866025*\GP@patternsize}}
@@ -234,14 +159,6 @@
     }
   }
 }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% This section sets up a routine for filling a shape with
-%% triangles.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% We have to delay this definition until after \GP@patternsize is
-%% redefined (by the pattern selection and/or user override)
 \newcommand{\GP@declaretripat}{
 \tikzdeclarepattern{
   name=triangles,
@@ -250,9 +167,7 @@
   tile size={(\GP@patternsize,2*0.866025*\GP@patternsize)},
   parameters={\tikztrirotate},
   tile transformation={rotate=\tikztrirotate},
-  defaults={
-    rotate/.store in=\tikztrirotate,rotate=0,
-    },
+  defaults={rotate/.store in=\tikztrirotate,rotate=0},
   code={
         \pgfsetlinewidth{0.6pt}
         \pgfpathmoveto{\pgfpoint{0mm}{0mm}}
@@ -267,12 +182,6 @@
     }
   }
 }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% This section sets up a routine for filling the squares in a
-%% grid with null lines.
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% TODO Still can't figure out the correct pattern shift!!
 \newcommand{\GP@declarelightconepat}{
 \pgfkeys{
   /pgf/pattern keys/myshift/.store in=\myshift,
@@ -284,51 +193,30 @@
   parameters={\myshift},
   bounding box={(0,0) and (\GP@patternsize,\GP@patternsize)},
   tile size={(\GP@patternsize, \GP@patternsize)},
-  tile transformation={
-    shift=\myshift,
-  },
-  defaults={
-    myshift/.store in=\myshift,myshift={(0,0)},
-  },
+  tile transformation={shift=\myshift},
+  defaults={myshift/.store in=\myshift,myshift={(0,0)}},
   code={
-    %% TODO Make the dashing an option
-    \tikzset{lightlines/.style={line width=0.4pt,dash=on 0.05cm off 0.05cm phase 0.025cm}}
+    \tikzset{lightlines/.style={%
+      line width=0.4pt,dash=on 0.05cm off 0.05cm phase 0.025cm}}
     \draw [lightlines] (0,0) -- (\GP@patternsize,\GP@patternsize);
     \draw [lightlines] (0,\GP@patternsize) -- (\GP@patternsize,0);
   },
 }
 }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% This section sets up a routine for filling a region with dots
-%% Slightly modified version of code added by Leo
-%% Stein (@duetosymmetry on Twitter).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% We have to delay this definition until after \GP@patternsize is
-%% redefined (by the pattern selection and/or user override)
 \newcommand{\GP@declaredotpat}{
 \pgfdeclarepatternformonly
-  {dotgrid}%% name
-  {\pgfpoint{-0.5*\GP@patternsize}{-0.5*\GP@patternsize}}%% lower left
-  {\pgfpoint{0.5*\GP@patternsize}{0.5*\GP@patternsize}}%%  upper right
-  {\pgfpoint{\GP@patternsize}{\GP@patternsize}}%%  tile size
-  {%% shape description
+  {dotgrid}
+  {\pgfpoint{-0.5*\GP@patternsize}{-0.5*\GP@patternsize}}
+  {\pgfpoint{0.5*\GP@patternsize}{0.5*\GP@patternsize}}
+  {\pgfpoint{\GP@patternsize}{\GP@patternsize}}
+  {%
     \pgfpathcircle{\pgfqpoint{0pt}{0pt}}{\GPOpt@dotsize}
     \pgfusepath{fill}
   }
 }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Begin pattern execution infrastructure
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% This inner code will be set by the choicekey pattern=...
 \newcommand{\GP@innerpatterncode}{}
-%% This is the "outer" code to hook into every page
-\newcommand{\GP@patterncode}{% No blank lines in this code!
+\newcommand{\GP@patterncode}{%
 \begin{tikzpicture}[remember picture, overlay]
-%%
-%% Change "thin" to "very thin" if the lines are too thick.
 \tikzset{
   minorgrid/.style={minorcolor, thin},
   majorgrid/.style={majorcolor, thin},
@@ -340,223 +228,124 @@
 \coordinate (a) at (current page text area.south west);
 \coordinate (b) at (current page text area.north east);
 \fi
-%%
 \GP@innerpatterncode%
-%%
 \end{tikzpicture}
 }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Begin pattern definition code
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 \define@boolkey{GP}{patterndefaultfullness}{}
 \newcommand{\GP@patterndefaultgeometry}{}
 \newcommand{\GP@patterndefaultsize}{}
 
-%% Pattern-definer-helper
-%% The interface is:
-%% \GP@setpattern
-%%   {<true for default fullpage, false for default textarea>}
-%%   {<default geometry config>}
-%%   {<default pattern size>}  %% NOTE, not tile length
-%%   {<contents of inner pattern code>}
 \newcommand{\GP@setpattern}[4]{%
 \setkeys{GP}{patterndefaultfullness=#1}
 \renewcommand{\GP@patterndefaultgeometry}{#2}
 \renewcommand{\GP@patterndefaultsize}{#3}
 \renewcommand{\GP@innerpatterncode}{#4}
 }
-
 \define@choicekey*{GP}{pattern}[\val\nr]%
-  %% Allowed values for pattern:
   {std,stdeight,majmin,dot,hex,hexup,tri,iso,lightcone,ruled,doubleruled}{%
   \ifcase\nr\relax
-    %% std
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Quadrille, ten squares per inch.
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% std: quadrille, 10 squares per inch
     \GP@setpattern{false}{letterpaper, margin=0.2in}{0.1in}{%
-%% Draw a grid with 10 squares per inch.
 \draw[style=minorgrid, shift={(a)}] (0,0) grid [step=\GP@patternsize] (b);
-%%
-%% Draw a frame around the grid.
 \draw[style=majorgrid] (a) rectangle (b);
     }
   \or
-    %% stdeight
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Quadrille, eight squares per inch.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% stdeight: quadrille, 8 squares per inch
     \GP@setpattern{false}{letterpaper, margin=0.1875in}{0.125in}{%
-%% Draw a grid with 10 squares per inch.
 \draw[style=minorgrid, shift={(a)}] (0,0) grid [step=\GP@patternsize] (b);
-%%
-%% Draw a frame around the grid.
 \draw[style=majorgrid] (a) rectangle (b);
     }
   \or
-    %% majmin
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Graph paper, eight squares per inch with a major grid
-%% every half-inch.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% majmin: major/minor graph paper.
+    %% Minor step = \GP@patternsize; major step = 4x (every half inch).
     \GP@setpattern{false}{letterpaper, margin=0.25in}{0.125in}{%
-%% Draw a grid with 10 squares per inch.
 \draw[style=minorgrid, shift={(a)}] (0,0) grid [step=\GP@patternsize] (b);
-%%
-\draw[style=majorgrid, shift={(a)}] (0,0) grid [step=4*\GP@patternsize]   (b);
-%%
-%% Draw a frame around the grid.
+\draw[style=majorgrid, shift={(a)}] (0,0) grid [step=4*\GP@patternsize] (b);
 \draw[style=majorgrid] (a) rectangle (b);
     }
   \or
-    %% dot
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Dot grid
-%% Slightly modified version of code added by Leo
-%% Stein (@duetosymmetry).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% dot: dot grid
     \GP@setpattern{true}{}{0.1in}{%
     \fill [pattern=dotgrid,pattern color=minorcolor] (a) rectangle (b);
     }
   \or
-    %% hex
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Hex grid
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% hex: hexagonal grid, standard orientation
     \GP@setpattern{true}{}{0.1666in}{%
     \fill [pattern=hexagons,pattern color=minorcolor] (a) rectangle (b);
     }
   \or
-    %% hexup
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Hex-up grid
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% hexup: hexagonal grid rotated 90 degrees
     \GP@setpattern{true}{}{0.1666in}{%
     \fill [pattern={hexagons[rotate=90]},pattern color=minorcolor] (a) rectangle (b);
     }
   \or
-    %% tri
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Triangle grid, adjust triangle size in the preamble
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% tri: triangular grid
     \GP@setpattern{true}{}{0.25in}{%
       \fill [pattern=triangles,pattern color=minorcolor] (a) rectangle (b);
     }
   \or
-    %% iso
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Isometric grid
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% iso: isometric grid (triangles rotated 90 degrees)
     \GP@setpattern{true}{}{0.25in}{%
       \fill [pattern={triangles[rotate=90]}, pattern color=minorcolor] (a) rectangle (b);
     }
   \or
-    %% lightcone
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% A grid with light cones.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% lightcone: square grid with 45-degree light-cone diagonals
     \GP@setpattern{false}{letterpaper, margin=.125in}{0.25in}{%
-%% Draw a grid with 4 squares per inch.
 \draw[style=minorgrid, shift={(a)}] (0,0) coordinate grid [step=\GP@patternsize] (b);
-%%
-%% Draw a border around the grid.
-\draw[style=majorgrid, pattern={lightcones[myshift={(a)}]}, pattern color=lightlines] (a) rectangle (b);
+\draw[style=majorgrid, pattern={lightcones[myshift={(a)}]},
+  pattern color=lightlines] (a) rectangle (b);
     }
   \or
-    %% ruled
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Ruled page with bold lines every 0.2in or 0.25in
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% ruled: ruled page with bold horizontal lines
     \GP@setpattern{false}{letterpaper, body={8in,10.8in}}{0.2in}{%
-%% Draw a ruled page with lines every 0.2in
-\draw[style=majorgrid, shift={(a)}] (0,0) grid [ystep=\GP@patternsize, xstep=\paperwidth] (b);
-%% Draw a frame around the grid.
+\draw[style=majorgrid, shift={(a)}] (0,0)
+  grid [ystep=\GP@patternsize, xstep=\paperwidth] (b);
 \draw[style=majorgrid] (a) rectangle (b);
     }
   \or
-    %% doubleruled
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Ruled page with bold lines every 0.25in and light lines
-%% every 0.125 in.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% doubleruled: bold lines alternating with lighter lines.
+    %% Minor lines every \GP@patternsize; bold every 2*\GP@patternsize.
     \GP@setpattern{false}{letterpaper, margin=.25in}{0.125in}{%
-%% Draw a ruled pattern with thin lines every 0.125 in and bold lines every 0.25 in.
-\draw[style=minorgrid, shift={(a)}] (0,0) grid [ystep=\GP@patternsize, xstep=\paperwidth] (b);
-%%
-\draw[style=majorgrid, shift={(a)}] (0,0) grid [ystep=2*\GP@patternsize, xstep=\paperwidth] (b);
-%%
-%% Draw a frame around the grid.
+\draw[style=minorgrid, shift={(a)}] (0,0)
+  grid [ystep=\GP@patternsize, xstep=\paperwidth] (b);
+\draw[style=majorgrid, shift={(a)}] (0,0)
+  grid [ystep=2*\GP@patternsize, xstep=\paperwidth] (b);
 \draw[style=majorgrid] (a) rectangle (b);
     }
   \fi
 }
-
-%% Use the passed package option to set the above key
 \expandafter\@setkeyhelper\expandafter{\GPOpt@pattern}{pattern}
-
-%% Determine whether or not to (re)set fullpage vs textarea
 \ifGP@fullnessset
-%% Respect their choice
 \else
-  %% Reset the value of \GP@fullpage based on the pattern's default
-  %% There's probably a more idiomatic way to do this but I can't
-  %% figure it out
   \ifKV@GP@patterndefaultfullness
     \GP@fullpagetrue
   \else
     \GP@fullpagefalse
   \fi
 \fi
-
-%% Determine whether or not to fiddle with the page geometry
 \ifGP@geometrypreviouslyloaded
-%% Respect their previous choice
-\PackageWarning{gridpapers}{'geometry' package was previously loaded, will not use pattern defaults.}
+  \PackageWarning{gridpapers}{%
+    'geometry' package was previously loaded, will not use pattern defaults.}
 \else
-  %% Use the pattern's defaults,
   \expandafter\geometry\expandafter{\GP@patterndefaultgeometry}
-  %% And then override with any more specific settings passed by the user
   \expandafter\geometry\expandafter{\GPOpt@geometry}
 \fi
-
-%% Determine the correct pattern length
 \ifx\GPOpt@patternsize\@empty
-  % Use the pattern's preferred length
   \renewcommand{\GP@patternsize}{\GP@patterndefaultsize}
 \else
-  % Override with the user's choice
   \renewcommand{\GP@patternsize}{\GPOpt@patternsize}
 \fi
-
-%% Now that everything has been set up, we can finally define the
-%% patterns with the correct lengths.
 \GP@declarehexpat
 \GP@declaretripat
 \GP@declarelightconepat
 \GP@declaredotpat
-
-%% Set the background color.
 \AtBeginDocument{\pagecolor{bgcolor}}
-%% ---------------------------------------------------------------
-%% Selective grid activation
-%% \gridpaperon  -> activate grid from current page onwards
-%% \gridpaperoff -> deactivate grid
-%% \gridpages{N} -> insert N blank grid pages, then deactivate
-%%
-%% MODIFIED: \ifGP@active now starts TRUE by default so the grid
-%% appears on every page without any extra command.  When the package
-%% option 'manualactivation' is passed, the flag starts FALSE and the
-%% old behaviour (grid off until \gridpaperon) is restored.
-%% ---------------------------------------------------------------
 \newif\ifGP@active
 \ifGP@manualactivation
-  \GP@activefalse   %% manualactivation: start with grid OFF
+  \GP@activefalse
 \else
-  \GP@activetrue    %% default: start with grid ON
+  \GP@activetrue
 \fi
-
 \newcommand{\gridpaperon}{\GP@activetrue}
 \newcommand{\gridpaperoff}{%
   \clearpage
@@ -575,29 +364,23 @@
     \fi
   \ifnum\GP@pagecnt<#1\repeat
   \clearpage
-  % Padding solo se la classe supporta openright E l'opzione è attiva
   \@ifclassloaded{book}{%
     \if@openright
       \ifodd\c@page\else
-        \hbox{}%
-        \thispagestyle{empty}%
-        \newpage
+        \hbox{}\thispagestyle{empty}\newpage
       \fi
     \fi
   }{%
     \@ifclassloaded{scrbook}{%
       \if@openright
         \ifodd\c@page\else
-          \hbox{}%
-          \thispagestyle{empty}%
-          \newpage
+          \hbox{}\thispagestyle{empty}\newpage
         \fi
       \fi
-    }{}% article e altre classi: non fare nulla
+    }{}%
   }%
   \GP@activefalse
 }
-%% Hook the pattern code to every page, but only execute it if the grid is active
 \AddEverypageHook{
   \ifGP@active
     \GP@patterncode

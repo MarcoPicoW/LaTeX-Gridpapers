@@ -1,6 +1,6 @@
 % \iffalse meta-comment
 %
-% Copyright (C) 2021 by Robert McNees <rmcnees@luc.edu>, Leo C. Stein <leo.stein@gmail.com>
+% Copyright (C) 2026 by Marco Keller
 % ---------------------------------------------------------------------------
 % This work may be distributed and/or modified under the
 % conditions of the LaTeX Project Public License, either version 1.3
@@ -12,10 +12,19 @@
 %
 % This work has the LPPL maintenance status `maintained'.
 %
-% The Current Maintainers of this work are Robert McNees, Leo C. Stein.
+% The Current Maintainer of this work is Marco Keller.
 %
-% This work consists of the files gridpapers.dtx and gridpapers.ins
-% and the derived filebase gridpapers.sty.
+% Inspired by and based on the original work of:
+%   Robert McNees <rmcnees@luc.edu>
+%   Leo C. Stein  <leo.stein@gmail.com>
+% Full credit to them for the original concept, the package architecture,
+% and the core TikZ patterns.
+%
+% This work consists of the files:
+%   gridpapers.dtx
+%   gridpapers.ins
+% and the derived file:
+%   gridpapers.sty
 %
 % \fi
 %
@@ -29,15 +38,16 @@
 \usepackage[dvipsnames]{xcolor}
 \usepackage[pattern=stdeight, textarea,
   majorcolor=cornflower!30, minorcolor=cornflower!10,
-  geometry={margin=1in, left=2in}]{gridpapers}[2021/03/14]
+  geometry={margin=1in, left=2in}]{gridpapers}[2026/03/26]
 \usepackage{hyperref}
-\hypersetup{colorlinks,urlcolor=NavyBlue,citecolor=NavyBlue,linkcolor=NavyBlue,
-  pdfauthor={Robert McNees and Leo C. Stein},
-  pdftitle={The gridpapers package}}
-\usepackage{fontawesome}
-\definecolor{twitterblue}{RGB}{64,153,255}
-\newcommand{\email}[1]{$\langle$\href{mailto:#1}{#1}$\rangle$}
-\newcommand{\twitter}[1]{\href{https://twitter.com/#1}{\textcolor{twitterblue}{\faTwitter}\,\tt\textcolor{twitterblue}{@#1}}}
+\hypersetup{
+  colorlinks,
+  urlcolor=NavyBlue,
+  citecolor=NavyBlue,
+  linkcolor=NavyBlue,
+  pdfauthor={Marco Keller},
+  pdftitle={The gridpapers package}
+}
 \usepackage{dtxdescribe}
 \usepackage[columns=2]{idxlayout}
 \EnableCrossrefs
@@ -51,242 +61,466 @@
 %</driver>
 % \fi
 %
-% \CheckSum{430}
+% \CheckSum{0}
 %
-% \CharacterTable
-%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
-%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
-%   Digits        \0\1\2\3\4\5\6\7\8\9
-%   Exclamation   \!     Double quote  \"     Hash (number) \#
-%   Dollar        \$     Percent       \%     Ampersand     \&
-%   Acute accent  \'     Left paren    \(     Right paren   \)
-%   Asterisk      \*     Plus          \+     Comma         \,
-%   Minus         \-     Point         \.     Solidus       \/
-%   Colon         \:     Semicolon     \;     Less than     \<
-%   Equals        \=     Greater than  \>     Question mark \?
-%   Commercial at \@     Left bracket  \[     Backslash     \\
-%   Right bracket \]     Circumflex    \^     Underscore    \_
-%   Grave accent  \`     Left brace    \{     Vertical bar  \|
-%   Right brace   \}     Tilde         \~}
-%
-%
-% \changes{v1.0.0}{2021/03/13}{Converted to DTX file}
-% \changes{v1.0.1}{2021/03/19}{Hotfix: old installs don't have
-% everypage-1x, use everypage}
-% \changes{v1.0.2}{2021/03/26}{Replace triangle and hexagon code
-% to allow rotated grids, add 'ghostly' colorset}
+% \changes{v1.0.0}{2021/03/13}{Original version by McNees and Stein, converted to DTX}
+% \changes{v1.0.1}{2021/03/19}{Hotfix: fall back to everypage-1x on older installs}
+% \changes{v1.0.2}{2021/03/26}{Replace triangle and hexagon code to support
+%   rotated grids; add \texttt{ghostly} colorset}
 % \changes{v1.0.5}{2026/03/20}{Add selective grid activation:
 %   \cs{gridpaperon}, \cs{gridpaperoff}, \cs{gridpages}}
-% \changes{v1.1.0}{2026/03/23}{Grid always active by default;
-%   add \texttt{manualactivation} option to restore manual control}
-% \DoNotIndex{\newcommand,\newenvironment}
+% \changes{v1.1.0}{2026/03/23}{Grid is now active by default on every page;
+%   add \texttt{manualactivation} option to restore manual control;
+%   documentation rewritten by Marco Keller}
 %
 % \GetFileInfo{gridpapers.sty}
+%
 % \title{The \textsf{gridpapers} package}
-% \author{Robert McNees\footnote{\email{rmcnees@luc.edu}; \twitter{mcnees}}
-%   \ and
-%   Leo C.\ Stein\footnote{\email{leo.stein@gmail.com}; \twitter{duetosymmetry}}}
-% \date{\fileversion~from \filedate}
+% \author{Marco Keller\\[0.4em]
+%   \small Based on the original work of\\
+%   \small Robert McNees and Leo C.\ Stein}
+% \date{\fileversion~from~\filedate}
 %
 % \maketitle
 %
-% All development happens at the repo:
-% \url{https://github.com/mcnees/LaTeX-Graph-Paper}.
+% \tableofcontents
 %
+% ^^A ===================================================================
 % \section{Introduction}
+% ^^A ===================================================================
 %
-% Make your own quadrille, graph, hex, etc.\ paper! Uses the PGF/TikZ
-% package for \LaTeX, which should be part of any modern \TeX{}
-% installation. Lots of preset defaults to get started with ease, yet
-% all colors and spacing are customizable.
+% The \textsf{gridpapers} package lets you create quadrille, graph,
+% hexagonal, dot, isometric, and many other kinds of ruled paper
+% directly in \LaTeX{}, using the \textsf{PGF/TikZ} graphics engine.
+% All colors, sizes, and page geometry are fully customizable.
 %
-% There are example .tex files in the |examples| directory to
-% help get you started with customization. Each tex file has an
-% almost-empty body, with a |\usepackage| statement that you can
-% customize. For example, engineer-pad.tex looks like this:
-% \VerbatimInput[frame=single,
-%   numbers=left,
-%   xleftmargin=2em,
-%   label=engineer-pad.tex]{examples/engineer-pad.tex}
-% (The |~| in the body forces a non-empty body, or else latex wouldn't generate a PDF).
+% \medskip\noindent
+% \textbf{Origins.}\quad
+% This package was originally created by
+% \href{http://jacobi.luc.edu/}{Robert McNees} with key contributions
+% from \href{http://duetosymmetry.com/}{Leo C.\ Stein}.
+% Their work includes the overall package architecture, all TikZ
+% patterns (hexagons, triangles, light cones, dots, grids), and the
+% color presets. The present version builds directly on that foundation
+% and extends it with:
+% \begin{itemize}
+%   \item automatic grid activation (on by default for every page);
+%   \item explicit control commands \cs{gridpaperon}, \cs{gridpaperoff},
+%         and \cs{gridpages};
+%   \item the \texttt{manualactivation} option to restore the classic
+%         opt-in behavior;
+%   \item this fully rewritten reference documentation.
+% \end{itemize}
 %
-% \section{Usage}
+% \medskip\noindent
+% The source repository lives at:\\
+% \url{https://github.com/mcnees/LaTeX-Graph-Paper}
 %
-% \subsection{Options}
+% \medskip\noindent
+% Note: This package is distinct from the similarly named
+% \href{https://www.ctan.org/pkg/graphpaper}{\textsf{graphpaper}}
+% package on CTAN.
 %
-% Your graph paper is configured through a number of key/value options
-% to the |\usepackage| command.  Let's go through these options.
+% ^^A ===================================================================
+% \section{Installation}
+% ^^A ===================================================================
 %
-% \DescribeObject{pattern=\marg{name}}\DescribeDefault{std} Which of
-% the predefined patterns to use for the page or textarea background.
-% The current list of pattern names is: |std|, |stdeight|, |majmin|,
-% |dot|, |hex|, |hexup|, |tri|, |iso|, |lightcone|, |ruled|, |doubleruled|. We
-% describe each of these patterns in Sec.~\ref{sec:patterns}.
-% Patterns come with default page geometry (size and margins; see
-% |geometry|), and default `fullness' (whether they fill the page or
-% not; see options |fullpage| and |textarea|).
+% If \textsf{gridpapers} is already provided by your \TeX{} distribution
+% (TeX Live, MiKTeX, \ldots), install it through your distribution's
+% package manager and skip this section.
 %
-% \DescribeObject{colorset=\marg{name}}\DescribeDefault{std} Color
-% presets.  Valid color preset names are: |std|, |precocious|, |ghostly|,
-% |brickred|, |engineer|, |plumpad|. A preset determines the
-% |majorcolor|, |minorcolor|, and |bgcolor| all at once. But, you can
-% start from a preset and then override some colors.
+% For a manual installation, copy \texttt{gridpapers.sty} into the
+% same directory as your \LaTeX{} source, or into any directory on
+% \TeX's search path.
 %
-% \DescribeObject{majorcolor=\marg{color}} Override the preset
-% ``major'' color. This can be a named color, or using the syntax from
-% |xcolor| to mix colors together.
+% To regenerate \texttt{gridpapers.sty} from this \texttt{.dtx} file:
+% \begin{verbatim}
+%   pdflatex gridpapers.ins
+% \end{verbatim}
 %
-% \DescribeObject{minorcolor=\marg{color}} Override the preset
-% ``minor'' color. As above.
+% To build this documentation:
+% \begin{verbatim}
+%   pdflatex gridpapers.dtx
+%   makeindex -s gglo.ist -o gridpapers.gls gridpapers.glo
+%   pdflatex gridpapers.dtx
+%   pdflatex gridpapers.dtx
+% \end{verbatim}
 %
-% \DescribeObject{bgcolor=\marg{color}} Override the preset background
-% color. As above.
+% ^^A ===================================================================
+% \section{Quick start}
+% ^^A ===================================================================
 %
-% \DescribeObject{patternsize=\marg{length}} Override the preset
-% pattern size.  The meaning of this length argument is different for
-% each pattern; see Sec.~\ref{sec:patterns} for more.
+% \subsection{Standalone graph paper document}
+%
+% The simplest use case is a single-page document with a grid background:
+%
+% \begin{verbatim}
+% \documentclass{article}
+% \usepackage[pattern=std]{gridpapers}
+% \begin{document}
+% \thispagestyle{empty}
+% ~
+% \end{document}
+% \end{verbatim}
+%
+% The |~| forces a non-empty body; without any content \LaTeX{} would
+% not produce a PDF.
+% As of version~1.1.0 the grid is \emph{active by default} on every
+% page, so no extra command is needed in the document body.
+%
+% \subsection{Grid pages inside a larger document}
+%
+% When you only want the grid on selected pages of an otherwise normal
+% document, use the \texttt{manualactivation} option together with
+% \cs{gridpages}:
+%
+% \begin{verbatim}
+% \documentclass{book}
+% \usepackage[pattern=std, textarea, manualactivation]{gridpapers}
+% \begin{document}
+%
+% Regular text on a plain page.
+%
+% \gridpages{3}
+%
+% More regular text, back to plain pages.
+%
+% \end{document}
+% \end{verbatim}
+%
+% ^^A ===================================================================
+% \section{Package options}
+% ^^A ===================================================================
+%
+% All configuration is done through options passed to |\usepackage|,
+% using key=value syntax.
+%
+% \subsection{Pattern selection}
+%
+% \DescribeObject{pattern=\marg{name}}\DescribeDefault{std}
+% Selects the background pattern. Valid names are:
+% |std|, |stdeight|, |majmin|, |dot|, |hex|, |hexup|,
+% |tri|, |iso|, |lightcone|, |ruled|, |doubleruled|.
+% Each pattern ships with a default page geometry and a default
+% \emph{fullness} (whether it fills the whole page or just the text
+% area; see |fullpage| and |textarea|).
+% Every pattern is described in detail in Sec.~\ref{sec:patterns}.
+%
+% \subsection{Color preset}
+%
+% \DescribeObject{colorset=\marg{name}}\DescribeDefault{std}
+% Selects a color preset. Valid names are:
+% |std|, |precocious|, |ghostly|, |brickred|, |engineer|, |plumpad|.
+% A preset sets |majorcolor|, |minorcolor|, and |bgcolor| all at once.
+% You can start from a preset and then override individual colors.
+% Presets are described in Sec.~\ref{sec:colorsets}.
+%
+% \subsection{Color overrides}
+%
+% \DescribeObject{majorcolor=\marg{color}}
+% Overrides the ``major'' color (border and primary grid lines).
+% Accepts any named color or an \textsf{xcolor} expression such as
+% |cornflower!40|.
+%
+% \DescribeObject{minorcolor=\marg{color}}
+% Overrides the ``minor'' color (secondary grid lines, dots, fill
+% patterns). Same syntax as |majorcolor|.
+%
+% \DescribeObject{bgcolor=\marg{color}}
+% Overrides the page background color.
+%
+% \subsection{Pattern size}
+%
+% \DescribeObject{patternsize=\marg{length}}
+% Overrides the default size of the pattern. The meaning of this length
+% depends on the chosen pattern; see Sec.~\ref{sec:patterns}.
 %
 % \DescribeObject{dotsize=\marg{length}}\DescribeDefault{.7pt}
-% Controls the size of the dots themselves for |pattern=dot|.
+% Controls the radius of individual dots for |pattern=dot|.
 %
-% \DescribeObject{fullpage} Make the pattern fill the whole page.
+% \subsection{Page coverage}
 %
-% \DescribeObject{textarea} Make the pattern fill only the text area
-% of the document. At most one of the |fullpage| or |textarea| can be
-% specified. If one is specified, it will override the default
-% `fullness' setting of the pattern.
+% \DescribeObject{fullpage}
+% The pattern covers the entire page, including margins.
 %
-% \DescribeObject{geometry=\marg{geometry spec}} Page geometry
-% specification, using the syntax of the |geometry| package. This
-% specification will override the pattern's default page geometry.
-% However, if the |geometry| package was loaded before |gridpapers|,
-% this option will be ignored.
+% \DescribeObject{textarea}
+% The pattern covers only the text area of the document.
+% At most one of |fullpage| or |textarea| may be specified.
 %
-% \DescribeObject{manualactivation} By default the grid pattern is
-% active on every page from the start of the document. Passing this
-% option disables that behaviour: the grid starts \emph{off} and must
-% be turned on explicitly with |\gridpaperon|. This is useful when the
-% package is used inside a larger document and the grid should appear
-% only on selected pages.
+% \subsection{Page geometry}
 %
-% \subsection{Patterns}
+% \DescribeObject{geometry=\marg{spec}}
+% Page geometry specification using the syntax of the \textsf{geometry}
+% package. If \textsf{geometry} was loaded before \textsf{gridpapers},
+% this option is ignored and a warning is emitted.
+%
+% \subsection{Activation mode}
+%
+% \DescribeObject{manualactivation}
+% By default (since v1.1.0) the grid is active on \emph{every} page
+% from the start of the document. Passing this option reverts to the
+% classic behavior: the grid starts \emph{off} and must be switched on
+% explicitly with \cs{gridpaperon}. This is the recommended mode when
+% \textsf{gridpapers} is used inside a larger document where the grid
+% should appear only on selected pages.
+%
+% ^^A ===================================================================
+% \section{Commands}
+% ^^A ===================================================================
+%
+% \DescribeMacro{\gridpaperon}
+% Activates the grid pattern from the current page onwards, until
+% \cs{gridpaperoff} is called or the document ends.
+% In the default mode this command is redundant (the grid is already
+% on), but it can be used to re-enable the grid after \cs{gridpaperoff}.
+%
+% \DescribeMacro{\gridpaperoff}
+% Deactivates the grid pattern from the current page onwards.
+% Issues a \cs{clearpage} internally so the current page is flushed
+% before the state changes.
+% This is the initial state when |manualactivation| is used.
+%
+% \DescribeMacro{\gridpages}
+% |\gridpages|\marg{n} inserts \meta{n} blank pages with the grid
+% pattern. The grid is activated automatically before the first page
+% and deactivated after the last, so surrounding pages are unaffected.
+% In |book| and |scrbook| classes with |openright|, a blank padding
+% page is added automatically when needed.
+%
+% ^^A ===================================================================
+% \section{Patterns}
 % \label{sec:patterns}
+% ^^A ===================================================================
 %
-% The current set of patterns:
+% \DescribeObject{std}
+% \textbf{Quadrille, ten squares per inch.}
+% |patternsize| = side of one square. Default: |0.1in|.
+% Geometry: letter, 0.2in margins. Fullness: text area.
 %
-% \DescribeObject{std} Quadrille, ten squares per inch.  The
-% |patternsize| option controls the side of a square.  Default is
-% |patternsize=0.1in|.
+% \DescribeObject{stdeight}
+% \textbf{Quadrille, eight squares per inch.}
+% |patternsize| = side of one square. Default: |0.125in|.
+% Geometry: letter, 0.1875in margins. Fullness: text area.
 %
-% \DescribeObject{stdeight} Quadrille, eight squares per inch.  The
-% |patternsize| option controls the side of a square.  Default is
-% |patternsize=0.125in|.
+% \DescribeObject{majmin}
+% \textbf{Graph paper with major and minor grid.}
+% Eight squares per inch; major grid every half inch (every 4 minor
+% squares). |patternsize| = side of a minor square. Default: |0.125in|.
+% Geometry: letter, 0.25in margins. Fullness: text area.
 %
-% \DescribeObject{majmin} Graph paper, eight squares per inch with a
-% major grid every half-inch.  The |patternsize| option controls the
-% side of a small square (the larger squares are four times bigger).
-% Default is |patternsize=0.125in|.
+% \DescribeObject{dot}
+% \textbf{Dot grid.}
+% |patternsize| = dot spacing. |dotsize| = dot radius.
+% Defaults: |0.1in| / |.7pt|. Fullness: full page.
 %
-% \DescribeObject{dot} Grid of dots.  The size of an individual dot is
-% set by |dotsize|.  The |patternsize| option controls the distance
-% between dots.  Default is |patternsize=0.1in|.
+% \DescribeObject{hex}
+% \textbf{Hexagonal grid} (flat-top orientation).
+% |patternsize| = hexagon side length. Default: |0.1666in|.
+% Fullness: full page.
 %
-% \DescribeObject{hex} Grid of hexagons.  The |patternsize| option
-% controls the side length of a hexagon.  Default is
-% |patternsize=0.1666in|.
+% \DescribeObject{hexup}
+% \textbf{Hexagonal grid, rotated 90\textdegree} (pointy-top orientation).
+% Same parameters as |hex|. Fullness: full page.
 %
-% \DescribeObject{hexup} Grid of hexagons, rotated 90 degrees from the
-% default orientation.  The |patternsize| option controls the side
-% length of a hexagon.  Default is |patternsize=0.1666in|.
+% \DescribeObject{tri}
+% \textbf{Triangular grid.}
+% |patternsize| = triangle side length. Default: |0.25in|.
+% Fullness: full page.
 %
-% \DescribeObject{tri} Triangle grid.  The |patternsize| option
-% controls the side length of a triangle.  Default is
-% |patternsize=0.25in|.
+% \DescribeObject{iso}
+% \textbf{Isometric grid} (triangles rotated 90\textdegree).
+% Useful for technical drawings and axonometric projections.
+% Same parameters as |tri|. Fullness: full page.
 %
-% \DescribeObject{iso} Isometric grid.  The |patternsize| option
-% controls the side length of a triangle.  Default is
-% |patternsize=0.25in|.
+% \DescribeObject{lightcone}
+% \textbf{Square grid with light cones.}
+% A square grid overlaid with dashed 45\textdegree\ diagonals.
+% |patternsize| = square side. Default: |0.25in|.
+% Geometry: letter, 0.125in margins. Fullness: text area.
 %
-% \DescribeObject{lightcone} A grid with light cones (45° lines) on a
-% square grid.  The |patternsize| option controls the side of a
-% horizontal square (not the tipped squared).  Default is
-% |patternsize=0.25in|.
+% \DescribeObject{ruled}
+% \textbf{Ruled page.}
+% |patternsize| = vertical line spacing. Default: |0.2in|.
+% Geometry: letter, |body={8in,10.8in}|. Fullness: text area.
 %
-% \DescribeObject{ruled} Ruled page with bold lines.  The
-% |patternsize| option controls the vertical distance between lines.
-% Default is |patternsize=0.2in|.
+% \DescribeObject{doubleruled}
+% \textbf{Double-ruled page.}
+% Bold lines alternating with lighter lines.
+% |patternsize| = spacing between adjacent lines; bold lines are
+% spaced |2*patternsize| apart. Default: |0.125in|.
+% Geometry: letter, 0.25in margins. Fullness: text area.
 %
-% \DescribeObject{doubleruled} Ruled page with bold lines alternating
-% with light lines.  The |patternsize| option controls the vertical
-% distance between neighboring lines.  Default is
-% |patternsize=0.125in|.
+% ^^A ===================================================================
+% \section{Color presets}
+% \label{sec:colorsets}
+% ^^A ===================================================================
 %
+% \DescribeObject{std}
+% Cornflower blue on white (default).
+% Minor: |cornflower!30|. Major: |cornflower!50|. BG: |white|.
+%
+% \DescribeObject{precocious}
+% Warm rose tones, reminiscent of vintage notebook paper.
+% Minor: |rosiegrid!50|. Major: |rosiegrid|. BG: |rosiebg|.
+%
+% \DescribeObject{ghostly}
+% Very faint grey on white.
+% Minor: |gray!15|. Major: |gray!20|. BG: |white|.
+%
+% \DescribeObject{brickred}
+% Brick red on pale scarlet.
+% Minor: |brick!35|. Major: |brick!60|. BG: |scarlet!8|.
+%
+% \DescribeObject{engineer}
+% Green on light green, inspired by classic engineering pads.
+% Minor: |chameleon!50|. Major: |chameleon!80|. BG: |chameleon!10|.
+%
+% \DescribeObject{plumpad}
+% Cornflower blue on pale plum.
+% Minor: |cornflower!40|. Major: |cornflower!70|. BG: |plum!10|.
+%
+% ^^A ===================================================================
 % \section{Examples}
+% ^^A ===================================================================
 %
-% \subsection{Plenty of customization}
+% \subsection{Simple graph paper}
 %
-% Let's say you want to use the |tri| pattern, which by default fills
-% the page. But you want it to fill just the textarea of an A4 page
-% with 2cm margins, and you want the triangles to be .75cm
-% long. Finally, you like the colors of the engineer set, but want a
-% white background. Then you would write:
-% \begin{sourceverb}[frame=single]
+% \begin{verbatim}
+% \documentclass{article}
+% \usepackage[pattern=std]{gridpapers}
+% \begin{document}
+% \thispagestyle{empty}
+% ~
+% \end{document}
+% \end{verbatim}
+%
+% \subsection{Classic engineering pad}
+%
+% \begin{verbatim}
+% \documentclass{article}
+% \usepackage[pattern=majmin, colorset=engineer]{gridpapers}
+% \begin{document}
+% \thispagestyle{empty}
+% ~
+% \end{document}
+% \end{verbatim}
+%
+% \subsection{Hex grid on A4, full page}
+%
+% \begin{verbatim}
+% \documentclass{article}
+% \usepackage[pattern=hex, colorset=engineer,
+%   fullpage, geometry={a4paper}]{gridpapers}
+% \begin{document}
+% \thispagestyle{empty}
+% ~
+% \end{document}
+% \end{verbatim}
+%
+% \subsection{Custom colors}
+%
+% Named colors and \textsf{xcolor} blends can be used freely:
+%
+% \begin{verbatim}
+% \documentclass{article}
+% \usepackage{xcolor}
+% \definecolor{mydeepgreen}{rgb}{0.07, 0.56, 0.04}
+% \usepackage[pattern=majmin,
+%   majorcolor=mydeepgreen,
+%   minorcolor={mydeepgreen!40}]{gridpapers}
+% \begin{document}
+% \thispagestyle{empty}
+% ~
+% \end{document}
+% \end{verbatim}
+%
+% \subsection{Full customization}
+%
+% Triangular grid on A4 with 2cm margins, text area only,
+% 0.75cm triangles, engineer colors but white background:
+%
+% \begin{verbatim}
 % \usepackage[pattern=tri,
 %   patternsize=0.75cm,
 %   textarea,
 %   colorset=engineer,
 %   bgcolor=white,
 %   geometry={a4paper, margin=2cm}]{gridpapers}
-% \end{sourceverb}
+% \end{verbatim}
 %
-% \subsection{Custom colors}
+% \subsection{Grid pages inside a book}
 %
-% Using named or blended custom colors is demonstrated in the example
-% file |custom-colors.tex|:
-% \VerbatimInput[frame=single,
-%   numbers=left,
-%   xleftmargin=2em,
-%   label=custom-colors.tex]{examples/custom-colors.tex}
-%
-% \subsection{Grid pages inside a larger document}
-%
-% When including grid pages inside a document with regular text, use
-% the |manualactivation| option so the grid does not appear on every
-% page, then use |\gridpages{n}| to insert the desired number of grid
-% pages:
-% \begin{sourceverb}[frame=single]
+% \begin{verbatim}
+% \documentclass{book}
 % \usepackage[pattern=std, textarea, manualactivation]{gridpapers}
-% ...
-% Regular text on a plain page.
-% \gridpages{3}
-% More regular text, back to plain pages.
-% \end{sourceverb}
+% \begin{document}
 %
-% \StopEventually{}
+% A regular chapter with no grid.
 %
+% \gridpages{5}   % five blank grid pages for notes
+%
+% Another regular chapter.
+%
+% \end{document}
+% \end{verbatim}
+%
+% \StopEventually{\PrintChanges}
+%
+% ^^A ===================================================================
 % \section{Implementation}
+% ^^A ===================================================================
+%
+% The complete, annotated source code follows. Each section is preceded
+% by a prose explanation of the code's purpose and any non-obvious
+% design decisions.
 %
 % \iffalse
 %<*package>
 % \fi
 %
+% \subsection{Package declaration and dependencies}
+%
+% We declare the minimum required \LaTeX{} format and register the
+% package name, version, and date.
 %    \begin{macrocode}
 \NeedsTeXFormat{LaTeX2e}[1994/06/01]
 \ProvidesPackage{gridpapers}
-    [2021/03/27 v1.1.0 Graph paper backgrounds]
-
+    [2026/03/26 v1.1.0 Graph paper backgrounds]
+%    \end{macrocode}
+%
+% Required packages:
+% \begin{itemize}
+%   \item \textsf{xkeyval}, \textsf{kvoptions}: key=value option handling;
+%   \item \textsf{xcolor}: color definition and mixing;
+%   \item \textsf{tikz} + |patterns.meta|, |calc|: pattern drawing and
+%         coordinate arithmetic;
+%   \item \textsf{tikzpagenodes}: page-corner and text-area coordinates;
+%   \item \textsf{pagecolor}: sets the page background color.
+% \end{itemize}
+%    \begin{macrocode}
 \RequirePackage{xkeyval}
 \RequirePackage{kvoptions}
 \RequirePackage{xcolor}
 \RequirePackage{tikz}
 \usetikzlibrary{patterns.meta,calc}
 \RequirePackage{tikzpagenodes}
-%% everypage has been superseded -- try to use the new builtin
-%% approach, but fall back to everypage-1x if needed
-%% This code is roughly taken from the new everypage code
+%    \end{macrocode}
+%
+% \subsection{The every-page hook}
+%
+% We need to execute TikZ drawing code on every page. Modern \LaTeX{}
+% kernels (2020+) provide |\AddToHook{shipout/background}|. On older
+% engines we fall back to \textsf{everypage-1x}, or plain
+% \textsf{everypage} if even that is unavailable.
+%
+% The |\put(1in,-1in){...}| in the modern-kernel branch offsets the
+% coordinate origin: \texttt{shipout/background} starts at the
+% bottom-left corner of the physical page, while TikZ \texttt{overlay}
+% pictures measure from the top-left, so a 1in shift in each axis
+% reconciles the two systems.
+%    \begin{macrocode}
 \@ifundefined{AddToHook}{%
   \IfFileExists{everypage-1x.sty}{%
-    %% If everypage is new enough to complain, avoid the complaints
     \RequirePackage{everypage-1x}
   }{\RequirePackage{everypage}}
 }{%
@@ -294,79 +528,97 @@
   \AddToHook{shipout/background}{\put(1in,-1in){#1}}}
 }
 \RequirePackage{pagecolor}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Option parsing
-%% Declare switches for processing the options.
-
+%    \end{macrocode}
+%
+% \subsection{Boolean switches}
+%
+% |\newif\ifNAME| creates |\ifNAME|, |\NAMEtrue|, and |\NAMEfalse|.
+% We use these to record option-parsing results before acting on them,
+% keeping the option-parsing and option-application phases separate.
+%
+% \begin{description}
+%   \item[|GP@geometrypreviouslyloaded|] \textsf{geometry} was already
+%         loaded; we must not override the user's page layout.
+%   \item[|GP@fullnessset|] The user explicitly chose |fullpage| or
+%         |textarea|; the pattern default must not override this.
+%   \item[|GP@fullpage|] Pattern should cover the full physical page.
+%   \item[|GP@textarea|] Pattern should cover the text area only.
+%   \item[|GP@manualactivation|] Grid starts off; user controls it
+%         explicitly.
+% \end{description}
+%    \begin{macrocode}
 \newif\ifGP@geometrypreviouslyloaded
 \newif\ifGP@fullnessset
 \newif\ifGP@fullpage
 \newif\ifGP@textarea
-%% MODIFIED: new switch for manual activation mode
 \newif\ifGP@manualactivation
 \GP@geometrypreviouslyloadedfalse
 \GP@fullnesssetfalse
 \GP@fullpagefalse
 \GP@textareafalse
-%% MODIFIED: manual activation is off by default (grid is always on)
 \GP@manualactivationfalse
-
+%    \end{macrocode}
+%
+% \subsection{Key=value option declarations}
+%
+% The \textsf{kvoptions} prefix |GPOpt@| is prepended to every option,
+% so e.g.\ |pattern=std| is stored as |\GPOpt@pattern|.
+%    \begin{macrocode}
 \SetupKeyvalOptions{%
   family=GP,%
   prefix=GPOpt@%
 }
-
 \DeclareStringOption[std]{pattern}
 \DeclareStringOption[std]{colorset}
-
 \DeclareStringOption{majorcolor}
 \DeclareStringOption{minorcolor}
 \DeclareStringOption{bgcolor}
-
 \DeclareStringOption{patternsize}
 \DeclareStringOption[.7pt]{dotsize}
-
 \DeclareVoidOption{fullpage}{\GP@fullpagetrue}
 \DeclareVoidOption{textarea}{\GP@textareatrue}
-
-%% MODIFIED: new option -- when passed, grid starts OFF and must be
-%% enabled explicitly with \gridpaperon (restores old behaviour)
 \DeclareVoidOption{manualactivation}{\GP@manualactivationtrue}
-
 \DeclareStringOption{geometry}
-
 \ProcessKeyvalOptions*
-
-%% Can only have one of fullpage or textarea
+%    \end{macrocode}
+%
+% \subsection{Validating coverage options}
+%
+% Combining |fullpage| and |textarea| is an error. We also set
+% |GP@fullnessset| so that later code knows the user has made an
+% explicit choice and the pattern default should be ignored.
+%    \begin{macrocode}
 \ifGP@fullpage
   \ifGP@textarea
     \PackageError{gridpapers}{%
       Can not specify both fullpage and textarea, please remove one option}{}
-    \fi
+  \fi
   \GP@fullnesssettrue
 \fi
-
 \ifGP@textarea
   \GP@fullnesssettrue
 \fi
-
-%% We keep track of this to know whether or not we would be overriding
-%% a previously-set page geometry
+%    \end{macrocode}
+%
+% \subsection{Conditional loading of \textsf{geometry}}
+%
+% If \textsf{geometry} was already loaded we record the fact and move
+% on; a warning is emitted later. Otherwise we pass the |geometry|
+% option through and load the package ourselves.
+%    \begin{macrocode}
 \@ifpackageloaded{geometry}
   {\GP@geometrypreviouslyloadedtrue}
   {\GP@geometrypreviouslyloadedfalse%
     \PassOptionsToPackage{\GPOpt@geometry}{geometry}%
     \RequirePackage{geometry}%
   }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Actual package code
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Some nice colors.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    \end{macrocode}
+%
+% \subsection{Base color definitions}
+%
+% Named colors used internally by the presets. All can be blended with
+% the \textsf{xcolor} |color!percentage| syntax.
+%    \begin{macrocode}
 \definecolor{plum}{rgb}{0.36078, 0.20784, 0.4}
 \definecolor{chameleon}{rgb}{0.30588, 0.60392, 0.023529}
 \definecolor{cornflower}{rgb}{0.12549, 0.29020, 0.52941}
@@ -375,21 +627,21 @@
 \definecolor{sunrise}{rgb}{0.80784, 0.36078, 0}
 \definecolor{rosiebg}{RGB}{250,247,232}
 \definecolor{rosiegrid}{RGB}{186,137,113}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% The color to use for the null directions when drawing lightcones.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    \end{macrocode}
+%
+% Dedicated color for the |lightcone| diagonal lines:
+%    \begin{macrocode}
 \colorlet{lightlines}{scarlet!30}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Pre-defined Color schemes
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Here are some pre-defined color schemes for the paper background
-%% and the major and minor grid lines.  These are switched by using
-%% the option colorset=<name>.  The allowed values for colorset are in
-%% the list below.
+%    \end{macrocode}
+%
+% \subsection{Color presets}
+%
+% |\define@choicekey*| creates a multiple-choice key. |\nr| expands
+% to a zero-based index; |\ifcase| selects the matching block. Each
+% preset defines three color aliases: |minorcolor|, |majorcolor|,
+% |bgcolor|.
+%    \begin{macrocode}
 \define@choicekey*{GP}{colorset}[\val\nr]%
-  %% Allowed values for colorset:
   {std,precocious,ghostly,brickred,engineer,plumpad}[std]{%
   \ifcase\nr\relax
     %% std
@@ -423,42 +675,52 @@
     \colorlet{bgcolor}{plum!10}
   \fi
 }
-
-%% Get the specified color set from the options
-\def\@setkeyhelper#1#2{%
-  \setkeys{GP}{#2=#1}
-}
+%    \end{macrocode}
+%
+% Apply the chosen preset. |\@setkeyhelper| fully expands its first
+% argument before passing it to |\setkeys|, avoiding premature
+% expansion problems.
+%    \begin{macrocode}
+\def\@setkeyhelper#1#2{\setkeys{GP}{#2=#1}}
 \expandafter\@setkeyhelper\expandafter{\GPOpt@colorset}{colorset}
-
-%% If the user further specified majorcolor, minorcolor, and/or
-%% bgcolor, we now override the selected colorset
-\ifx\GPOpt@majorcolor\@empty
-\else
+%    \end{macrocode}
+%
+% Apply individual color overrides after the preset so they always win:
+%    \begin{macrocode}
+\ifx\GPOpt@majorcolor\@empty\else
   \colorlet{majorcolor}{\GPOpt@majorcolor}
 \fi
-\ifx\GPOpt@minorcolor\@empty
-\else
+\ifx\GPOpt@minorcolor\@empty\else
   \colorlet{minorcolor}{\GPOpt@minorcolor}
 \fi
-\ifx\GPOpt@bgcolor\@empty
-\else
+\ifx\GPOpt@bgcolor\@empty\else
   \colorlet{bgcolor}{\GPOpt@bgcolor}
 \fi
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% The size parameter -- different meanings for different patterns
-%% Will be reset by pattern code
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    \end{macrocode}
+%
+% \subsection{Pattern size parameter}
+%
+% |\GP@patternsize| is redefined by the pattern selection code and then
+% optionally overridden by the user's |patternsize| option. The value
+% here is a never-used fallback.
+%    \begin{macrocode}
 \newcommand{\GP@patternsize}{0.1in}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% This section sets up a routine for filling a shape with
-%% hexagons. Uses code from:
-%% http://tex.stackexchange.com/questions/6019/drawing-hexagons/6128#6128
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% We have to delay this definition until after \GP@patternsize is
-%% redefined (by the pattern selection and/or user override)
+%    \end{macrocode}
+%
+% \subsection{TikZ pattern: hexagons}
+%
+% The tile geometry for a hexagon of side $s$:
+% width $= 3s$, height $= 2h$ where $h = s\sqrt{3}/2 \approx 0.866025\,s$.
+% Each tile contains the strokes for exactly two hexagonal half-cells,
+% which tile the plane seamlessly.
+%
+% The |rotate| parameter is exploited by both |hex| (0\textdegree) and
+% |hexup| (90\textdegree) without duplicating the pattern code.
+%
+% The definition is deferred to |\GP@declarehexpat| because
+% |\GP@patternsize| must have its final value before the tile dimensions
+% are baked in.
+%    \begin{macrocode}
 \newcommand{\GP@declarehexpat}{
 \tikzdeclarepattern{
   name=hexagons,
@@ -467,9 +729,7 @@
   tile size={(3*\GP@patternsize,0.866025*2*\GP@patternsize)},
   parameters={\tikzhexrotate},
   tile transformation={rotate=\tikzhexrotate},
-  defaults={
-    rotate/.store in=\tikzhexrotate,rotate=0,
-  },
+  defaults={rotate/.store in=\tikzhexrotate,rotate=0},
   code={
       \pgfsetlinewidth{0.6pt}
       \pgftransformshift{\pgfpoint{0mm}{0.866025*\GP@patternsize}}
@@ -487,15 +747,14 @@
     }
   }
 }
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% This section sets up a routine for filling a shape with
-%% triangles.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% We have to delay this definition until after \GP@patternsize is
-%% redefined (by the pattern selection and/or user override)
+%    \end{macrocode}
+%
+% \subsection{TikZ pattern: triangles}
+%
+% Each tile ($s \times 2h$, $h = s\sqrt{3}/2$) contains two equilateral
+% triangles: one pointing up and one pointing down. The |rotate|
+% parameter serves both |tri| (0\textdegree) and |iso| (90\textdegree).
+%    \begin{macrocode}
 \newcommand{\GP@declaretripat}{
 \tikzdeclarepattern{
   name=triangles,
@@ -504,9 +763,7 @@
   tile size={(\GP@patternsize,2*0.866025*\GP@patternsize)},
   parameters={\tikztrirotate},
   tile transformation={rotate=\tikztrirotate},
-  defaults={
-    rotate/.store in=\tikztrirotate,rotate=0,
-    },
+  defaults={rotate/.store in=\tikztrirotate,rotate=0},
   code={
         \pgfsetlinewidth{0.6pt}
         \pgfpathmoveto{\pgfpoint{0mm}{0mm}}
@@ -521,12 +778,15 @@
     }
   }
 }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% This section sets up a routine for filling the squares in a
-%% grid with null lines.
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% TODO Still can't figure out the correct pattern shift!!
+%    \end{macrocode}
+%
+% \subsection{TikZ pattern: light cones}
+%
+% Dashed 45\textdegree\ diagonals ($\nearrow$ and $\searrow$) in each
+% square tile, simulating the light cones of special relativity.
+% |myshift| translates the tile to align the diagonals with the drawing
+% area corner |(a)|, preventing a visible seam at the boundary.
+%    \begin{macrocode}
 \newcommand{\GP@declarelightconepat}{
 \pgfkeys{
   /pgf/pattern keys/myshift/.store in=\myshift,
@@ -538,51 +798,48 @@
   parameters={\myshift},
   bounding box={(0,0) and (\GP@patternsize,\GP@patternsize)},
   tile size={(\GP@patternsize, \GP@patternsize)},
-  tile transformation={
-    shift=\myshift,
-  },
-  defaults={
-    myshift/.store in=\myshift,myshift={(0,0)},
-  },
+  tile transformation={shift=\myshift},
+  defaults={myshift/.store in=\myshift,myshift={(0,0)}},
   code={
-    %% TODO Make the dashing an option
-    \tikzset{lightlines/.style={line width=0.4pt,dash=on 0.05cm off 0.05cm phase 0.025cm}}
+    \tikzset{lightlines/.style={%
+      line width=0.4pt,dash=on 0.05cm off 0.05cm phase 0.025cm}}
     \draw [lightlines] (0,0) -- (\GP@patternsize,\GP@patternsize);
     \draw [lightlines] (0,\GP@patternsize) -- (\GP@patternsize,0);
   },
 }
 }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% This section sets up a routine for filling a region with dots
-%% Slightly modified version of code added by Leo
-%% Stein (@duetosymmetry on Twitter).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% We have to delay this definition until after \GP@patternsize is
-%% redefined (by the pattern selection and/or user override)
+%    \end{macrocode}
+%
+% \subsection{TikZ pattern: dots}
+%
+% Uses |\pgfdeclarepatternformonly| (the simpler API for filled-only
+% patterns). Each tile is a square of side |\GP@patternsize| with a
+% single filled circle of radius |\GPOpt@dotsize| at its center.
+%    \begin{macrocode}
 \newcommand{\GP@declaredotpat}{
 \pgfdeclarepatternformonly
-  {dotgrid}%% name
-  {\pgfpoint{-0.5*\GP@patternsize}{-0.5*\GP@patternsize}}%% lower left
-  {\pgfpoint{0.5*\GP@patternsize}{0.5*\GP@patternsize}}%%  upper right
-  {\pgfpoint{\GP@patternsize}{\GP@patternsize}}%%  tile size
-  {%% shape description
+  {dotgrid}
+  {\pgfpoint{-0.5*\GP@patternsize}{-0.5*\GP@patternsize}}
+  {\pgfpoint{0.5*\GP@patternsize}{0.5*\GP@patternsize}}
+  {\pgfpoint{\GP@patternsize}{\GP@patternsize}}
+  {%
     \pgfpathcircle{\pgfqpoint{0pt}{0pt}}{\GPOpt@dotsize}
     \pgfusepath{fill}
   }
 }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Begin pattern execution infrastructure
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% This inner code will be set by the choicekey pattern=...
+%    \end{macrocode}
+%
+% \subsection{Drawing infrastructure}
+%
+% |\GP@innerpatterncode| is redefined by |\GP@setpattern| for each
+% pattern. |\GP@patterncode| is the outer wrapper hooked into every
+% page: it opens a |tikzpicture| with |remember picture, overlay|,
+% sets the grid-line styles, computes the drawing-area corners |(a)|
+% and |(b)| (full page vs.\ text area), then calls the inner code.
+%    \begin{macrocode}
 \newcommand{\GP@innerpatterncode}{}
-%% This is the "outer" code to hook into every page
-\newcommand{\GP@patterncode}{% No blank lines in this code!
+\newcommand{\GP@patterncode}{%
 \begin{tikzpicture}[remember picture, overlay]
-%%
-%% Change "thin" to "very thin" if the lines are too thick.
 \tikzset{
   minorgrid/.style={minorcolor, thin},
   majorgrid/.style={majorcolor, thin},
@@ -594,248 +851,212 @@
 \coordinate (a) at (current page text area.south west);
 \coordinate (b) at (current page text area.north east);
 \fi
-%%
 \GP@innerpatterncode%
-%%
 \end{tikzpicture}
 }
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Begin pattern definition code
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%    \end{macrocode}
+%
+% \subsection{The \texttt{GP@setpattern} helper}
+%
+% Four arguments:
+% \#1~|true|/|false| -- default fullness (full page / text area);
+% \#2~default geometry string;
+% \#3~default pattern size;
+% \#4~TikZ drawing commands for the pattern body.
+%    \begin{macrocode}
 \define@boolkey{GP}{patterndefaultfullness}{}
 \newcommand{\GP@patterndefaultgeometry}{}
 \newcommand{\GP@patterndefaultsize}{}
 
-%% Pattern-definer-helper
-%% The interface is:
-%% \GP@setpattern
-%%   {<true for default fullpage, false for default textarea>}
-%%   {<default geometry config>}
-%%   {<default pattern size>}  %% NOTE, not tile length
-%%   {<contents of inner pattern code>}
 \newcommand{\GP@setpattern}[4]{%
 \setkeys{GP}{patterndefaultfullness=#1}
 \renewcommand{\GP@patterndefaultgeometry}{#2}
 \renewcommand{\GP@patterndefaultsize}{#3}
 \renewcommand{\GP@innerpatterncode}{#4}
 }
-
+%    \end{macrocode}
+%
+% \subsection{Pattern selection}
+%
+% A multiple-choice key maps pattern names to |\GP@setpattern| calls.
+% Minor grid lines are always drawn before major ones (lower layer first).
+%    \begin{macrocode}
 \define@choicekey*{GP}{pattern}[\val\nr]%
-  %% Allowed values for pattern:
   {std,stdeight,majmin,dot,hex,hexup,tri,iso,lightcone,ruled,doubleruled}{%
   \ifcase\nr\relax
-    %% std
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Quadrille, ten squares per inch.
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% std: quadrille, 10 squares per inch
     \GP@setpattern{false}{letterpaper, margin=0.2in}{0.1in}{%
-%% Draw a grid with 10 squares per inch.
 \draw[style=minorgrid, shift={(a)}] (0,0) grid [step=\GP@patternsize] (b);
-%%
-%% Draw a frame around the grid.
 \draw[style=majorgrid] (a) rectangle (b);
     }
   \or
-    %% stdeight
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Quadrille, eight squares per inch.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% stdeight: quadrille, 8 squares per inch
     \GP@setpattern{false}{letterpaper, margin=0.1875in}{0.125in}{%
-%% Draw a grid with 10 squares per inch.
 \draw[style=minorgrid, shift={(a)}] (0,0) grid [step=\GP@patternsize] (b);
-%%
-%% Draw a frame around the grid.
 \draw[style=majorgrid] (a) rectangle (b);
     }
   \or
-    %% majmin
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Graph paper, eight squares per inch with a major grid
-%% every half-inch.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% majmin: major/minor graph paper.
+    %% Minor step = \GP@patternsize; major step = 4x (every half inch).
     \GP@setpattern{false}{letterpaper, margin=0.25in}{0.125in}{%
-%% Draw a grid with 10 squares per inch.
 \draw[style=minorgrid, shift={(a)}] (0,0) grid [step=\GP@patternsize] (b);
-%%
-\draw[style=majorgrid, shift={(a)}] (0,0) grid [step=4*\GP@patternsize]   (b);
-%%
-%% Draw a frame around the grid.
+\draw[style=majorgrid, shift={(a)}] (0,0) grid [step=4*\GP@patternsize] (b);
 \draw[style=majorgrid] (a) rectangle (b);
     }
   \or
-    %% dot
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Dot grid
-%% Slightly modified version of code added by Leo
-%% Stein (@duetosymmetry).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% dot: dot grid
     \GP@setpattern{true}{}{0.1in}{%
     \fill [pattern=dotgrid,pattern color=minorcolor] (a) rectangle (b);
     }
   \or
-    %% hex
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Hex grid
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% hex: hexagonal grid, standard orientation
     \GP@setpattern{true}{}{0.1666in}{%
     \fill [pattern=hexagons,pattern color=minorcolor] (a) rectangle (b);
     }
   \or
-    %% hexup
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Hex-up grid
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% hexup: hexagonal grid rotated 90 degrees
     \GP@setpattern{true}{}{0.1666in}{%
     \fill [pattern={hexagons[rotate=90]},pattern color=minorcolor] (a) rectangle (b);
     }
   \or
-    %% tri
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Triangle grid, adjust triangle size in the preamble
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% tri: triangular grid
     \GP@setpattern{true}{}{0.25in}{%
       \fill [pattern=triangles,pattern color=minorcolor] (a) rectangle (b);
     }
   \or
-    %% iso
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Isometric grid
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% iso: isometric grid (triangles rotated 90 degrees)
     \GP@setpattern{true}{}{0.25in}{%
       \fill [pattern={triangles[rotate=90]}, pattern color=minorcolor] (a) rectangle (b);
     }
   \or
-    %% lightcone
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% A grid with light cones.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% lightcone: square grid with 45-degree light-cone diagonals
     \GP@setpattern{false}{letterpaper, margin=.125in}{0.25in}{%
-%% Draw a grid with 4 squares per inch.
 \draw[style=minorgrid, shift={(a)}] (0,0) coordinate grid [step=\GP@patternsize] (b);
-%%
-%% Draw a border around the grid.
-\draw[style=majorgrid, pattern={lightcones[myshift={(a)}]}, pattern color=lightlines] (a) rectangle (b);
+\draw[style=majorgrid, pattern={lightcones[myshift={(a)}]},
+  pattern color=lightlines] (a) rectangle (b);
     }
   \or
-    %% ruled
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Ruled page with bold lines every 0.2in or 0.25in
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% ruled: ruled page with bold horizontal lines
     \GP@setpattern{false}{letterpaper, body={8in,10.8in}}{0.2in}{%
-%% Draw a ruled page with lines every 0.2in
-\draw[style=majorgrid, shift={(a)}] (0,0) grid [ystep=\GP@patternsize, xstep=\paperwidth] (b);
-%% Draw a frame around the grid.
+\draw[style=majorgrid, shift={(a)}] (0,0)
+  grid [ystep=\GP@patternsize, xstep=\paperwidth] (b);
 \draw[style=majorgrid] (a) rectangle (b);
     }
   \or
-    %% doubleruled
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Ruled page with bold lines every 0.25in and light lines
-%% every 0.125 in.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %% doubleruled: bold lines alternating with lighter lines.
+    %% Minor lines every \GP@patternsize; bold every 2*\GP@patternsize.
     \GP@setpattern{false}{letterpaper, margin=.25in}{0.125in}{%
-%% Draw a ruled pattern with thin lines every 0.125 in and bold lines every 0.25 in.
-\draw[style=minorgrid, shift={(a)}] (0,0) grid [ystep=\GP@patternsize, xstep=\paperwidth] (b);
-%%
-\draw[style=majorgrid, shift={(a)}] (0,0) grid [ystep=2*\GP@patternsize, xstep=\paperwidth] (b);
-%%
-%% Draw a frame around the grid.
+\draw[style=minorgrid, shift={(a)}] (0,0)
+  grid [ystep=\GP@patternsize, xstep=\paperwidth] (b);
+\draw[style=majorgrid, shift={(a)}] (0,0)
+  grid [ystep=2*\GP@patternsize, xstep=\paperwidth] (b);
 \draw[style=majorgrid] (a) rectangle (b);
     }
   \fi
 }
-
-%% Use the passed package option to set the above key
 \expandafter\@setkeyhelper\expandafter{\GPOpt@pattern}{pattern}
-
-%% Determine whether or not to (re)set fullpage vs textarea
+%    \end{macrocode}
+%
+% \subsection{Resolving page coverage}
+%
+% If the user made no explicit choice, adopt the pattern's own default
+% (stored in the bool key |patterndefaultfullness|).
+%    \begin{macrocode}
 \ifGP@fullnessset
-%% Respect their choice
 \else
-  %% Reset the value of \GP@fullpage based on the pattern's default
-  %% There's probably a more idiomatic way to do this but I can't
-  %% figure it out
   \ifKV@GP@patterndefaultfullness
     \GP@fullpagetrue
   \else
     \GP@fullpagefalse
   \fi
 \fi
-
-%% Determine whether or not to fiddle with the page geometry
+%    \end{macrocode}
+%
+% \subsection{Resolving page geometry}
+%
+% If \textsf{geometry} was already loaded we warn and skip. Otherwise
+% we apply the pattern default first, then any user override, so the
+% user always has the final word.
+%    \begin{macrocode}
 \ifGP@geometrypreviouslyloaded
-%% Respect their previous choice
-\PackageWarning{gridpapers}{'geometry' package was previously loaded, will not use pattern defaults.}
+  \PackageWarning{gridpapers}{%
+    'geometry' package was previously loaded, will not use pattern defaults.}
 \else
-  %% Use the pattern's defaults,
   \expandafter\geometry\expandafter{\GP@patterndefaultgeometry}
-  %% And then override with any more specific settings passed by the user
   \expandafter\geometry\expandafter{\GPOpt@geometry}
 \fi
-
-%% Determine the correct pattern length
+%    \end{macrocode}
+%
+% \subsection{Resolving the pattern size}
+%
+% User-supplied |patternsize| wins; otherwise the pattern default is used.
+%    \begin{macrocode}
 \ifx\GPOpt@patternsize\@empty
-  % Use the pattern's preferred length
   \renewcommand{\GP@patternsize}{\GP@patterndefaultsize}
 \else
-  % Override with the user's choice
   \renewcommand{\GP@patternsize}{\GPOpt@patternsize}
 \fi
-
-%% Now that everything has been set up, we can finally define the
-%% patterns with the correct lengths.
+%    \end{macrocode}
+%
+% \subsection{Final TikZ pattern declarations}
+%
+% We declare the four TikZ patterns only now, after |\GP@patternsize|
+% has its definitive value. Declaring them earlier would bake in the
+% wrong tile dimensions.
+%    \begin{macrocode}
 \GP@declarehexpat
 \GP@declaretripat
 \GP@declarelightconepat
 \GP@declaredotpat
-
-%% Set the background color.
+%    \end{macrocode}
+%
+% Apply the background color at document start. |\AtBeginDocument| is
+% required because |bgcolor| may not be fully resolved at package-load
+% time (e.g.\ when |xcolor| color blending is involved).
+%    \begin{macrocode}
 \AtBeginDocument{\pagecolor{bgcolor}}
 %    \end{macrocode}
 %
 % \subsection{Selective grid activation}
 %
-% By default the grid is active on every page of the document.
-% If the |manualactivation| package option is given, the grid starts
-% \emph{off} and the following commands control it explicitly.
+% \begin{macro}{\gridpaperon}
+% \begin{macro}{\gridpaperoff}
+% \begin{macro}{\gridpages}
 %
-% \DescribeMacro{\gridpaperon}
-% Activates the grid pattern from the current page onwards, until
-% |\gridpaperoff| is called or the document ends.
-%
-% \DescribeMacro{\gridpaperoff}
-% Deactivates the grid pattern from the current page onwards.
-% When |manualactivation| is used this is also the \emph{initial} state.
-%
-% \DescribeMacro{\gridpages}
-% Inserts \meta{n} blank pages with the grid pattern.
-% The grid is automatically activated before the first page
-% and deactivated after the last one, so surrounding pages
-% are not affected.
-%
+% |\ifGP@active| gates the drawing code on every page.
+% Without |manualactivation| the flag starts true (grid on everywhere);
+% with |manualactivation| it starts false (opt-in mode).
 %    \begin{macrocode}
-%% ---------------------------------------------------------------
-%% Selective grid activation
-%% \gridpaperon  -> activate grid from current page onwards
-%% \gridpaperoff -> deactivate grid
-%% \gridpages{N} -> insert N blank grid pages, then deactivate
-%%
-%% MODIFIED: \ifGP@active now starts TRUE by default so the grid
-%% appears on every page without any extra command.  When the package
-%% option 'manualactivation' is passed, the flag starts FALSE and the
-%% old behaviour (grid off until \gridpaperon) is restored.
-%% ---------------------------------------------------------------
 \newif\ifGP@active
 \ifGP@manualactivation
-  \GP@activefalse   %% manualactivation: start with grid OFF
+  \GP@activefalse
 \else
-  \GP@activetrue    %% default: start with grid ON
+  \GP@activetrue
 \fi
-
+%    \end{macrocode}
+%
+% |\gridpaperon| simply raises the flag.
+%    \begin{macrocode}
 \newcommand{\gridpaperon}{\GP@activetrue}
-\newcommand{\gridpaperoff}{\GP@activefalse}
+%    \end{macrocode}
+%
+% |\gridpaperoff| flushes the current page first so that the last
+% gridded page is shipped out before the state changes.
+%    \begin{macrocode}
+\newcommand{\gridpaperoff}{%
+  \clearpage
+  \GP@activefalse
+}
+%    \end{macrocode}
+%
+% |\gridpages{n}| inserts \meta{n} blank grid pages. A |\loop| places
+% one |~| per page with |\clearpage| between iterations. After the loop
+% the grid is switched off.
+%
+% For |book|/|scrbook| with |openright|: if the page counter after the
+% grid block is even (verso), a blank page is inserted to avoid placing
+% the next chapter on a verso page.
+%    \begin{macrocode}
 \newcount\GP@pagecnt
 \newcommand{\gridpages}[1]{
   \clearpage
@@ -849,9 +1070,34 @@
     \fi
   \ifnum\GP@pagecnt<#1\repeat
   \clearpage
+  \@ifclassloaded{book}{%
+    \if@openright
+      \ifodd\c@page\else
+        \hbox{}\thispagestyle{empty}\newpage
+      \fi
+    \fi
+  }{%
+    \@ifclassloaded{scrbook}{%
+      \if@openright
+        \ifodd\c@page\else
+          \hbox{}\thispagestyle{empty}\newpage
+        \fi
+      \fi
+    }{}%
+  }%
   \GP@activefalse
 }
-%% Hook the pattern code to every page, but only execute it if the grid is active
+%    \end{macrocode}
+%
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \subsection{Hooking into every page}
+%
+% Register the drawing code with the every-page hook. The conditional
+% ensures that nothing is drawn on inactive pages.
+%    \begin{macrocode}
 \AddEverypageHook{
   \ifGP@active
     \GP@patterncode
